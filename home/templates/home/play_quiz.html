@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ quiz.name }} - Play Quiz</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            padding: 2rem;
+        }
+
+        h1 {
+            color: #003366;
+            margin-bottom: 2rem;
+        }
+
+        .question-container {
+            background: #fff;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .question {
+            font-size: 1.5rem;
+            color: #003366;
+            margin-bottom: 1rem;
+        }
+
+        .options {
+            list-style: none;
+            padding: 0;
+        }
+
+        .options li {
+            margin: 1rem 0;
+        }
+
+        .options label {
+            padding: 1rem;
+            background-color: #f4f4f9;
+            border-radius: 5px;
+            cursor: pointer;
+            display: block;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+
+        .options input {
+            margin-right: 10px;
+        }
+
+        .submit-btn {
+            background-color: #003366;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 5px;
+            border: none;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            background-color: #004b99;
+        }
+
+        .disabled {
+            pointer-events: none;
+        }
+
+        .feedback {
+            margin-top: 1rem;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .correct {
+            background-color: green !important;
+            color: white;
+        }
+
+        .incorrect {
+            background-color: red !important;
+            color: white;
+        }
+
+    </style>
+</head>
+<body>
+    <h1>{{ quiz.name }} - Quiz</h1>
+    <p class="score">Current Score: {{ request.session.score }}</p>
+
+    <p>Question {{ question_index|add:"1" }} of {{ total_questions }}</p>
+
+    <div class="question-container">
+        <p class="question">{{ question.question_text }}</p>
+        <ul class="options">
+            <li>
+                <label>
+                    <input type="radio" name="question_{{ question.id }}" value="1" class="option-btn">
+                    {{ question.option_1 }}
+                </label>
+            </li>
+            <li>
+                <label>
+                    <input type="radio" name="question_{{ question.id }}" value="2" class="option-btn">
+                    {{ question.option_2 }}
+                </label>
+            </li>
+            <li>
+                <label>
+                    <input type="radio" name="question_{{ question.id }}" value="3" class="option-btn">
+                    {{ question.option_3 }}
+                </label>
+            </li>
+            <li>
+                <label>
+                    <input type="radio" name="question_{{ question.id }}" value="4" class="option-btn">
+                    {{ question.option_4 }}
+                </label>
+            </li>
+        </ul>
+
+        <p class="feedback"></p> <!-- Feedback will appear here -->
+    </div>
+
+    <form method="POST" id="quiz-form">
+        {% csrf_token %}
+        {% if question_index|add:"1" < total_questions %}
+            <button type="submit" class="submit-btn">Next Question</button>
+        {% else %}
+            <button type="submit" class="submit-btn">Submit Quiz</button>
+        {% endif %}
+    </form>
+
+    <script>
+        document.querySelectorAll('.option-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const questionId = '{{ question.id }}';  // Get the current question ID
+                const selectedOption = this.value;      // Get the selected option
+                const allOptions = document.querySelectorAll(`input[name="question_{{ question.id }}"]`);
+                
+            
+                // Disable all options after one is selected
+                allOptions.forEach(option => option.disabled = true);
+            
+                // Perform AJAX request to check the answer
+                fetch("{% url 'check_answer' %}", {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}',
+                    },
+                    body: JSON.stringify({
+                        'question_id': questionId,
+                        'selected_option': selectedOption,
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const feedbackElement = document.querySelector('.feedback');
+                    const correctOption = data.correct_option; // The correct option number (1-4)
+                    const correctOptionText = data.correct_option_text; // The text of the correct option
+                    const score = data.score;  // Get the current score
+        
+                    // Reset the classes before adding the correct/incorrect classes
+                    document.querySelectorAll('.options label').forEach(label => {
+                        label.classList.remove('correct', 'incorrect');
+                    });
+        
+                    // Highlight options based on correctness
+                    document.querySelectorAll(`input[name="question_{{ question.id }}"]`).forEach(option => {
+                        const optionLabel = option.parentElement;
+        
+                        // If the option was selected, highlight it based on correctness
+                        if (option.value == selectedOption) {
+                            if (data.is_correct) {
+                                optionLabel.classList.add('correct');  // Correct selection
+                            } else {
+                                optionLabel.classList.add('incorrect');  // Incorrect selection
+                            }
+                        }
+        
+                        // Always highlight the correct option in green, whether selected or not
+                        if (option.value == correctOption && option.value != selectedOption) {
+                            optionLabel.classList.add('correct');  // Correct option (even if unselected)
+                        }
+                    });
+        
+                    // Provide feedback message
+                    if (data.is_correct) {
+                        feedbackElement.textContent = "Correct!";
+                    } else {
+                        feedbackElement.textContent = `Incorrect! The correct answer is: ${correctOptionText}`;
+                    }
+        
+                    // Display the updated score
+                    const scoreElement = document.querySelector('.score');
+                    scoreElement.textContent = `Current Score: ${score}`;  // Update score display
+        
+                    // Auto-move to next question after 2 seconds
+                    setTimeout(() => {
+                        document.getElementById('quiz-form').submit();  // Submit form to proceed to the next question
+                    }, 2000);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            });
+        });
+        
+        
+    </script>
+</body>
+</html>

@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Quiz - LokQuiz</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: #003366;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            padding: 1rem 0;
+            position: fixed;
+            height: 100%;
+            left: 0;
+            top: 0;
+            transition: transform 0.3s ease-in-out;
+            z-index: 1000;
+        }
+
+        .sidebar.hidden {
+            transform: translateX(-100%);
+        }
+
+        .sidebar .logo {
+            font-size: 1.8rem;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #fff;
+            text-decoration: none;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar ul li {
+            margin: 1rem 0;
+        }
+
+        .sidebar ul li a {
+            color: #fff;
+            text-decoration: none;
+            padding: 0.8rem 1.5rem;
+            display: block;
+            border-radius: 5px;
+            transition: background 0.3s ease;
+        }
+
+        .sidebar ul li a:hover {
+            background: #004b99;
+        }
+
+        .sidebar .logout {
+            margin-top: auto;
+            text-align: center;
+        }
+
+        .sidebar .logout a {
+            color: #FF5722;
+            font-weight: 600;
+            text-decoration: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 5px;
+            transition: background 0.3s ease;
+        }
+
+        .sidebar .logout a:hover {
+            background: #FF7043;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            margin-left: 250px;
+            padding: 2rem;
+            overflow-y: auto;
+            transition: margin-left 0.3s ease-in-out;
+        }
+
+        .main-content.expanded {
+            margin-left: 0;
+        }
+
+        .toggle-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: #003366;
+            color: #fff;
+            border: none;
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+            cursor: pointer;
+            border-radius: 5px;
+            z-index: 1100;
+        }
+
+        .toggle-btn:hover {
+            background: #004b99;
+        }
+
+        .main-content h1 {
+            color: #003366;
+            margin-bottom: 1rem;
+        }
+
+        .main-content p {
+            margin-bottom: 2rem;
+            color: #555;
+        }
+
+        .form-container {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-container h2 {
+            margin-bottom: 1.5rem;
+            color: #003366;
+        }
+
+        .form-container label {
+            font-size: 1rem;
+            color: #555;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .form-container input, .form-container textarea, .form-container button {
+            width: 100%;
+            padding: 0.8rem;
+            margin-bottom: 1.2rem;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        .form-container button {
+            background: #003366;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s ease;
+        }
+
+        .form-container button:hover {
+            background: #004b99;
+        }
+
+        @media (max-width: 768px) {
+            .toggle-btn {
+                display: block;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .main-content.expanded {
+                margin-left: 250px;
+            }
+        }
+
+        #loading {
+            display: none;
+            text-align: center;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-size: 1rem;
+            text-align: center;
+        }
+
+        .message.success {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .message.error {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .message.info {
+            background-color: #2196F3;
+            color: white;
+        }
+
+        /* Latest Quizzes section styling */
+        .latest-quizzes {
+            margin-top: 3rem;
+            padding: 1rem;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .latest-quizzes h3 {
+            color: #003366;
+            margin-bottom: 1rem;
+        }
+
+        .latest-quizzes ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .latest-quizzes .quiz-item {
+            background-color: #fff;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .latest-quizzes .quiz-name {
+            font-weight: bold;
+            color: #003366;
+        }
+
+        .latest-quizzes .quiz-date {
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        .latest-quizzes .play-button {
+            background-color: #003366;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background 0.3s ease;
+        }
+
+        .latest-quizzes .play-button:hover {
+            background-color: #004b99;
+        }
+        
+    </style>
+</head>
+<body>
+    <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+    <div class="sidebar">
+        <a href="/" class="logo">LokQuiz</a>
+        <ul>
+            <li><a href="/makequiz/">Make a Quiz</a></li>
+            <li><a href="/quiz/">Quizzes</a></li>
+            <li><a href="/materials/">Study Materials</a></li>
+            <li><a href="/leaderboard/">Leaderboard</a></li>
+            <li><a href="/profile/">Profile</a></li>
+        </ul>
+        <div class="logout">
+            <a href="/logout/">Logout</a>
+        </div>
+    </div>
+    <div class="main-content">
+        <h1>Create Your AI-Generated Quiz</h1>
+        <p>Enter the quiz details below, and our AI will generate the quiz for you based on the provided information.</p>
+
+        {% if messages %}
+            <div>
+                {% for message in messages %}
+                    <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        <div class="form-container">
+            <h2>AI Quiz Creation</h2>
+            <form id="quiz-form" method="POST">
+                {% csrf_token %}
+                <label for="quiz-name">Quiz Name</label>
+                <input type="text" id="quiz-name" name="quiz-name" placeholder="Enter quiz name" required>
+
+                <label for="quiz-topic">Quiz Topic</label>
+                <input type="text" id="quiz-topic" name="quiz-topic" placeholder="Enter quiz topic eg: History,Geography etc" required>
+
+                <label for="quiz-description">Quiz Description</label>
+                <textarea id="quiz-description" name="quiz-description" rows="4" placeholder="Enter quiz description , what type of questions do you want?" required></textarea>
+
+                <button type="submit">Create Quiz</button>
+            </form>
+        </div>
+
+        <!-- Latest Quizzes Section -->
+        <div class="latest-quizzes">
+            <h3>Latest Quizzes</h3>
+            {% if latest_quizzes %}
+                <ul>
+                    {% for quiz in latest_quizzes %}
+                        <li>
+                            <div class="quiz-item">
+                                <span class="quiz-name">{{ quiz.name }}</span>
+                                <span class="quiz-date">{{ quiz.created_at|date:"F j, Y" }}</span>
+                                <a href="{% url 'play_quiz' quiz.id %}" class="play-button">Play Quiz</a>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>No quizzes found. Create your first quiz!</p>
+            {% endif %}
+        </div>
+
+    </div>
+    
+    <div id="loading">
+        <div class="spinner"></div>
+        <p>Processing...</p>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const mainContent = document.querySelector('.main-content');
+            sidebar.classList.toggle('hidden');
+            mainContent.classList.toggle('expanded');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,270 @@
+from django.shortcuts import render, redirect , get_object_or_404
+from django.contrib.auth.models import User
+from django.contrib import messages
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.decorators import login_required
+import g4f
+import json
+from .models import Quiz, Question , Score
+from django.http import JsonResponse
+# Create your views here.
+def register_page(request):
+    if request.method == 'POST':
+        # Get form data
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        confirm_password = request.POST.get('confirm_password')
+        
+        # Check if passwords match
+        if password != confirm_password:
+            messages.error(request, "Passwords do not match.")
+            return redirect('register_page')
+        
+        # Check if username or email already exists
+        if User.objects.filter(username=username).exists():
+            messages.error(request, "Username already taken.")
+            return redirect('register_page')
+        if User.objects.filter(email=email).exists():
+            messages.error(request, "Email already taken.")
+            return redirect('register_page')
+        
+        # Create user
+        user = User.objects.create_user(username=username, email=email, password=password)
+        user.save()
+        login(request, user)
+        
+        messages.success(request, "Registration successful!")
+        return redirect('dashboard_page')  # Update to your home page or dashboard URL
+
+    return render(request, 'home/register.html')
+
+def login_view(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        
+        # Authenticate user
+        user = authenticate(request, username=username, password=password)
+        
+        if user is not None:
+            # Log in the user
+            login(request, user)
+            messages.success(request, "Login successful!")
+            return redirect('dashboard_page')  # Change this to the home or dashboard page
+        else:
+            messages.error(request, "Invalid username or password.")
+            return redirect('login')  # Redirect back to the login page
+    
+    return render(request, 'home/login.html')
+
+@login_required(login_url='/login/')
+def dashboard(request):
+    return render(request, 'home/dashboard.html')
+
+
+def create_quiz(quiz_topic, quiz_description):
+    prompt = f"""
+    You are a specialist Nepali Lok-Sewa Exam Helper. You know most of the question formats and what types of questions commonly appear in the Lok Sewa exams for various topics. 
+    Please help me create quiz questions for a specific topic. Ensure the questions are effective and likely to appear in the exam.
+    The topic for the quiz is: {quiz_topic}
+    The description of the quiz is: {quiz_description}
+    Respond with JSON only, like this:
+
+    {{
+        "quiz_name": "General Knowledge Quiz",
+        "topic": "General Knowledge",
+        "description": "A quiz to test your general knowledge.",
+        "questions": [
+            {{
+                "question": "What is the capital of France?",
+                "options": ["Berlin", "Madrid", "Paris", "Rome"],
+                "correct_option": 3
+            }},
+            {{
+                "question": "Who wrote 'Romeo and Juliet'?",
+                "options": ["Shakespeare", "Dickens", "Hemingway", "Twain"],
+                "correct_option": 1
+            }}
+        ]
+    }}
+
+    If the description or topic provided is incorrect, reply with: "Error Occurred: Bad Quiz Description or Topic".
+    Do not include any other content, only the JSON response. Only reply in English. Give at least 10 questions. Just reply me with JSON format only not even this ```json too.
+    if the quiz_topic and quiz_description is non-sense or out of topic please reply with that error.
+    """
+
+    response = g4f.ChatCompletion.create(
+        model="gpt-4o",
+        provider=g4f.Provider.ChatGptEs,
+        messages=[{"role": "user", "content": prompt}],
+        stream=True,
+    )
+
+    quiz_details = ""
+    for message in response:
+        # Since message is a string, append it directly to trip_plan
+        quiz_details += message
+
+    if quiz_details:
+        return quiz_details  # Return the full aggregated response
+    return False
+
+@login_required(login_url='/login/')
+def quiz_page(request):
+    if request.method == 'POST':
+        quiz_topic = request.POST.get('quiz-topic')
+        quiz_description = request.POST.get('quiz-description')
+
+        if not quiz_topic or not quiz_description:
+            messages.error(request, "Both quiz topic and description are required.")
+            return redirect('quiz_page')
+        
+        # Generate the quiz using AI
+        quiz_data = create_quiz(quiz_topic, quiz_description)
+        print(quiz_data)
+        if quiz_data:
+            print("Got the quiz data!!!!!!!!!")
+            try:
+                quiz_data = json.loads(quiz_data)
+
+                # Check if the response contains valid keys before accessing them
+                if 'quiz_name' in quiz_data and 'topic' in quiz_data and 'questions' in quiz_data:
+                    # Save Quiz Data
+                    quiz = Quiz.objects.create(
+                        user = request.user,
+                        name=quiz_data['quiz_name'],
+                        topic=quiz_data['topic'],
+                        description=quiz_data['description']
+                    )
+
+                    # Save Questions Data
+                    for question_data in quiz_data['questions']:
+                        Question.objects.create(
+                            quiz=quiz,
+                            question_text=question_data.get('question', ''),
+                            option_1=question_data.get('options', [])[0],
+                            option_2=question_data.get('options', [])[1],
+                            option_3=question_data.get('options', [])[2],
+                            option_4=question_data.get('options', [])[3],
+                            correct_option=question_data.get('correct_option', 1)
+                        )
+
+                    messages.success(request, "Quiz created successfully!")
+                    return redirect('view_quiz', quiz_id=quiz.id)  # Redirect to view quiz page
+                else:
+                    messages.error(request, "Invalid quiz data format received.")
+                    return redirect('quiz_page')
+
+            except json.JSONDecodeError:
+                messages.error(request, "Error occurred while parsing the quiz data.")
+                return redirect('quiz_page')
+        else:
+            messages.error(request, "Error occurred while generating the quiz.")
+            return redirect('quiz_page')
+    latest_quizzes = Quiz.objects.filter(user=request.user).order_by('-created_at')[:3]
+    return render(request, 'home/makequiz.html', {'latest_quizzes': latest_quizzes})
+
+@login_required(login_url='/login/')
+def play_quiz(request, quiz_id):
+    # Fetch the quiz using the ID
+    quiz = get_object_or_404(Quiz, pk=quiz_id)
+
+    # Fetch the related questions using the foreign key relationship
+    questions = Question.objects.filter(quiz=quiz)
+
+    # Initialize the session score if not already set
+    if 'score' not in request.session:
+        request.session['score'] = 0
+
+    # Keep track of the current question
+    current_question_index = int(request.GET.get('q', 0))  # Default to the first question
+
+    # Get the current question
+    current_question = questions[current_question_index]
+
+    # Store user answers if the form is submitted
+    if request.method == "POST":
+        selected_option = request.POST.get(f'question_{current_question.id}')
+        if selected_option:
+            # Save the user's answer (you could store this in a session or model)
+            # For simplicity, we're not persisting it in this example.
+            pass
+
+        # Redirect to the next question
+        if current_question_index + 1 < len(questions):
+            return redirect(f'/quiz/{quiz_id}/?q={current_question_index + 1}')
+        else:
+            # All questions are answered, show results
+            return redirect(f'/quiz/{quiz_id}/result')
+
+    # Return the current question and options
+    context = {
+        'quiz': quiz,
+        'question': current_question,
+        'question_index': current_question_index,
+        'total_questions': len(questions),
+    }
+    return render(request, 'home/play_quiz.html', context)
+
+@login_required(login_url='/login/')
+def quiz_results(request, quiz_id):
+    # Fetch the quiz details
+    quiz = get_object_or_404(Quiz, id=quiz_id)
+
+    # Fetch score and total_questions from session
+    session_score = request.session.pop('score', 0)  # Default to 0 if not found
+    correct_answers = session_score 
+    incorrect_answers = 10 - correct_answers
+
+    # Update the user's score in the database
+    db_score, created = Score.objects.get_or_create(user=request.user)
+    db_score.score += session_score
+    db_score.save()
+    total_score = db_score.score
+    return render(request, 'home/quiz_results.html', {
+        'quiz': quiz,
+        'score': session_score,
+        'total_questions': 10,
+        'correct_answers': correct_answers,
+        'incorrect_answers': incorrect_answers,
+        'total_score':total_score,
+    })
+
+
+def check_answer(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        question_id = data.get('question_id')
+        selected_option = int(data.get('selected_option', -1))  # Default to invalid if missing
+
+        # Initialize score in session if not already set
+        if 'score' not in request.session:
+            request.session['score'] = 0
+
+        # Ensure the selected option is valid (1-4)
+        if selected_option not in [1, 2, 3, 4]:
+            return JsonResponse({'error': 'Invalid option selected'}, status=400)
+
+        # Get the question object
+        try:
+            question = Question.objects.get(id=question_id)
+            correct_option = question.correct_option
+            is_correct = selected_option == correct_option
+
+            # Update score in session
+            if is_correct:
+                request.session['score'] += 1  # Increment score for correct answer
+
+            response_data = {
+                'is_correct': is_correct,
+                'correct_option_text': getattr(question, f'option_{correct_option}'),
+                'score': request.session['score'],  # Send the current score back to frontend
+            }
+
+            return JsonResponse(response_data)
+        except Question.DoesNotExist:
+            return JsonResponse({'error': 'Question not found'}, status=404)
+
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+
