@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Quiz - LokQuiz</title>
+    {% load static %}
+    <link rel="icon" href="{% static 'favicon.svg' %}" type="image/svg+xml">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
@@ -420,7 +422,7 @@
                 <input type="text" id="quiz-topic" name="quiz-topic" placeholder="Enter quiz topic eg: History,Geography etc" required>
 
                 <label for="quiz-description">Quiz Description</label>
-                <textarea id="quiz-description" name="quiz-description" rows="4" placeholder="Enter quiz description , what type of questions do you want?" required></textarea>
+                <textarea id="quiz-description" name="quiz-description" rows="4" placeholder="Enter quiz description , what type of questions do you want?(Optional.)"></textarea>
 
                 <button type="submit">Create Quiz</button>
             </form>
@@ -436,7 +438,7 @@
                             <div class="quiz-item">
                                 <span class="quiz-name">{{ quiz.name }}</span>
                                 <span class="quiz-date">{{ quiz.created_at|date:"F j, Y" }}</span>
-                                <a href="{% url 'quiz-detail' quiz.id %}" class="play-button">Play</a>
+                                <a href="{% url 'play_quiz' quiz.id %}" class="play-button">Play</a>
                             </div>
                         </li>
                     {% endfor %}

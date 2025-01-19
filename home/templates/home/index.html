@@ -1,0 +1,278 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LokQuiz - Your Path to Lok Sewa Success</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="icon" href="{% static 'favicon.svg' %}" type="image/svg+xml">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body, html {
+            font-family: 'Poppins', sans-serif;
+            height: 100%;
+            color: #333;
+        }
+
+        /* Main Background Setup */
+        body {
+            background-color: #f4f4f9;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            padding-top: 60px;
+        }
+
+        /* Header Section */
+        header {
+            background-color: #003366;
+            color: white;
+            padding: 120px 10%;
+            text-align: center;
+            position: relative;
+            border-bottom: 4px solid #004b99;
+            z-index: 2;
+        }
+
+        header h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        header p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            font-weight: 300;
+            max-width: 700px;
+            line-height: 1.6;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        header .cta-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        header .cta-buttons a {
+            text-decoration: none;
+            background-color: #004b99;
+            color: white;
+            padding: 1rem 2.5rem;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+        }
+
+        header .cta-buttons a:hover {
+            background-color: #003366;
+        }
+
+        .hero-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://unsplash.com/photos/1K8pIbIrhkQ/download?force=true');
+            background-size: cover;
+            background-position: center;
+            z-index: -1;
+            filter: brightness(0.5);
+        }
+
+        /* Features Section */
+        .features-section {
+            display: flex;
+            justify-content: space-between;
+            padding: 100px 10%;
+            background-color: white;
+            text-align: left;
+            flex-wrap: wrap;
+        }
+
+        .feature-card {
+            width: 30%;
+            background-color: #003366;
+            color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: scale(1.05);
+        }
+
+        .feature-card h3 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-card p {
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        /* Testimonials Section */
+        .testimonials-section {
+            background-color: #004b99;
+            color: white;
+            text-align: center;
+            padding: 80px 10%;
+        }
+
+        .testimonials-section h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .testimonial-cards {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .testimonial-card {
+            background-color: white;
+            color: #003366;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            width: 45%;
+            transition: transform 0.3s ease;
+        }
+
+        .testimonial-card:hover {
+            transform: scale(1.05);
+        }
+
+        .testimonial-card p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            font-style: italic;
+        }
+
+        .testimonial-card .author {
+            font-weight: 600;
+            margin-top: 20px;
+        }
+
+        /* Footer Section */
+        footer {
+            background-color: #003366;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2.5rem;
+            }
+
+            header p {
+                font-size: 1rem;
+            }
+
+            .cta-buttons a {
+                padding: 1rem 2rem;
+                font-size: 1rem;
+            }
+
+            .features-section {
+                flex-direction: column;
+                padding: 50px 5%;
+            }
+
+            .feature-card {
+                width: 100%;
+                margin-bottom: 20px;
+            }
+
+            .testimonials-section {
+                padding: 50px 5%;
+            }
+
+            .testimonial-card {
+                width: 100%;
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Section -->
+    <header>
+        <h1>Welcome to LokQuiz</h1>
+        <p>Your trusted partner for Lok Sewa exam preparation. Get access to interactive quizzes, study materials, and personalized learning tools to boost your exam success.</p>
+        <div class="cta-buttons">
+            <a href="/login/">Login</a>
+            <a href="/register/">Register</a>
+        </div>
+        <div class="hero-image"></div>
+    </header>
+
+    <!-- Features Section -->
+    <div class="features-section">
+        <div class="feature-card">
+            <h3>Interactive Quizzes</h3>
+            <p>Get access to an extensive library of quizzes that help you track your progress and prepare for the exam in a realistic way.</p>
+        </div>
+        <div class="feature-card">
+            <h3>Study Materials</h3>
+            <p>Access well-structured and comprehensive study materials covering all topics, helping you build a strong foundation.</p>
+        </div>
+        <div class="feature-card">
+            <h3>Performance Tracking</h3>
+            <p>Stay on top of your progress with detailed performance reports and personalized feedback to guide your improvement.</p>
+        </div>
+    </div>
+
+    <!-- Testimonials Section -->
+    <div class="testimonials-section">
+        <h2>What Our Users Say</h2>
+        <div class="testimonial-cards">
+            <div class="testimonial-card">
+                <p>"LokQuiz has transformed my study routine. The quizzes are challenging and the study materials are perfect for exam preparation."</p>
+                <div class="author">- Ramesh K.</div>
+            </div>
+            <div class="testimonial-card">
+                <p>"I passed my Lok Sewa exam thanks to LokQuiz. The platform helped me stay focused and organized. Highly recommend!"</p>
+                <div class="author">- Sita P.</div>
+            </div>
+            <div class="testimonial-card">
+                <p>"The personalized learning tools and detailed feedback on my quizzes were incredibly helpful. LokQuiz made a difference!"</p>
+                <div class="author">- Rajesh M.</div>
+            </div>
+            <div class="testimonial-card">
+                <p>"LokQuiz is the best platform for preparing for the Lok Sewa exam. It helped me build confidence and perform better."</p>
+                <div class="author">- Anjali S.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer Section -->
+    <footer>
+        <p>&copy; 2025 LokQuiz. All Rights Reserved.</p>
+    </footer>
+
+</body>
+</html>

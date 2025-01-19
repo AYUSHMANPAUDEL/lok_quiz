@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ quiz.name }} - Results</title>
+    {% load static %}
+    <link rel="icon" href="{% static 'favicon.svg' %}" type="image/svg+xml">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         body {
@@ -50,6 +52,21 @@
         .button:hover {
             background-color: #004b99;
         }
+
+        .back-button {
+            margin-top: 2rem;
+            display: inline-block;
+            background-color: #28a745;
+            padding: 1rem 2rem;
+            border-radius: 5px;
+            color: white;
+            text-decoration: none;
+            transition: background 0.3s ease;
+        }
+
+        .back-button:hover {
+            background-color: #218838;
+        }
     </style>
 </head>
 <body>
@@ -64,7 +81,10 @@
             <p><strong>Correct Answers:</strong> {{ correct_answers }}</p>
             <p><strong>Incorrect Answers:</strong> {{ incorrect_answers }}</p>
         </div>
-        <p class="score">Your Total Score: {{total_score}}</p>
+        <p class="score">Your Total Score: {{ total_score }}</p>
+
+        <!-- Go Back Button -->
+        <a href="/dashboard" class="back-button">Go Back to Dashboard</a>
     </div>
 </body>
 </html>

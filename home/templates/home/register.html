@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register - LokQuiz</title>
+    {% load static %}
+    <link rel="icon" href="{% static 'favicon.svg' %}" type="image/svg+xml">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         body {
@@ -160,14 +162,31 @@
                     <input type="email" id="email" name="email" placeholder="Enter your email" required>
                 </div>
                 <div class="input-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" placeholder="Enter your Username" required>
+                </div>
+                <div class="input-group">
                     <label for="password">Password</label>
                     <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                </div>
+                <div class="input-group">
+                    <label for="confirm_password">Confirm Password</label>
+                    <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirm your password" required>
                 </div>
                 <button type="submit" class="btn">Register</button>
                 <p class="switch">
                     Already have an account? <a href="/login/">Login here</a>
                 </p>
             </form>
+            
+            <!-- Add this block to display messages -->
+            {% if messages %}
+                <div class="messages">
+                    {% for message in messages %}
+                        <p class="message {{ message.tags }}">{{ message }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
         </div>
     </div>
 </body>

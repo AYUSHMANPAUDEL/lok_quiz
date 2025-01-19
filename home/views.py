@@ -8,6 +8,9 @@ import json
 from .models import Quiz, Question , Score
 from django.http import JsonResponse
 # Create your views here.
+def main_page(request):
+    return render(request,"home/index.html")
+
 def register_page(request):
     if request.method == 'POST':
         # Get form data
@@ -69,6 +72,7 @@ def create_quiz(quiz_topic, quiz_description):
     Please help me create quiz questions for a specific topic. Ensure the questions are effective and likely to appear in the exam.
     The topic for the quiz is: {quiz_topic}
     The description of the quiz is: {quiz_description}
+    quiz description might be blank too if it is then ignore else make questions according to quiz description.
     Respond with JSON only, like this:
 
     {{
@@ -92,7 +96,7 @@ def create_quiz(quiz_topic, quiz_description):
     If the description or topic provided is incorrect, reply with: "Error Occurred: Bad Quiz Description or Topic".
     Do not include any other content, only the JSON response. Only reply in English. Give at least 10 questions. Just reply me with JSON format only not even this ```json too.
     if the quiz_topic and quiz_description is non-sense or out of topic please reply with that error.Always make sure that correct option should be from 1 to 4 (not starting from 0).
-    Generate that type of questions that might come in Nepal's lok sewa exam.
+    Generate that type of questions that might come in Nepal's lok sewa exam. Recheck before giving me the questions and answers make sure every answers of the questions are correct.
     """
 
     response = g4f.ChatCompletion.create(
@@ -152,7 +156,7 @@ def quiz_page(request):
                         )
 
                     messages.success(request, "Quiz created successfully!")
-                    return redirect('view_quiz', quiz_id=quiz.id)  # Redirect to view quiz page
+                    return redirect('quiz_page')  # Redirect to view quiz page
                 else:
                     messages.error(request, "Invalid quiz data format received.")
                     return redirect('quiz_page')
@@ -357,3 +361,6 @@ def logout_view(request):
     if request.user.is_authenticated:
         logout(request)
     return redirect('login_page')
+
+def custom_404(request, exception):
+    return render(request, 'home/404.html', status=404)
