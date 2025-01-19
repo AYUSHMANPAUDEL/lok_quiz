@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Quiz - LokQuiz</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -62,13 +63,22 @@
             color: #fff;
             text-decoration: none;
             padding: 0.8rem 1.5rem;
-            display: block;
+            display: flex;
+            align-items: center;
             border-radius: 5px;
             transition: background 0.3s ease;
         }
 
         .sidebar ul li a:hover {
             background: #004b99;
+        }
+
+        .sidebar ul li a i {
+            margin-right: 10px;
+        }
+
+        .sidebar ul li.active a {
+            background: #005cbf;
         }
 
         .sidebar .logout {
@@ -92,6 +102,7 @@
         .main-content {
             flex-grow: 1;
             margin-left: 250px;
+            margin-top:15px;
             padding: 2rem;
             overflow-y: auto;
             transition: margin-left 0.3s ease-in-out;
@@ -278,22 +289,110 @@
         .latest-quizzes .play-button:hover {
             background-color: #004b99;
         }
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+        
+            .sidebar {
+                width: 100%;
+                position: absolute;
+                top: 0;
+                left: -100%;
+                transition: left 0.3s ease;
+            }
+        
+            .sidebar.hidden {
+                left: 0;
+            }
+        
+            .main-content {
+                margin-left: 0;
+                margin-top:50px;
+                padding: 1rem;
+            }
+        
+            .toggle-btn {
+                display: block;
+                position: fixed;
+                top: 20px;
+                left: 20px;
+                z-index: 1100;
+            }
+        }
+        
+        /* Very small devices */
+        @media (max-width: 480px) {
+            .sidebar .logo {
+                font-size: 1.2rem;
+            }
+
+            .card h2 {
+                font-size: 1.2rem;
+            }
+
+            .card a {
+                font-size: 0.8rem;
+                padding: 0.6rem 1rem;
+            }
+
+            .main-content h1 {
+                font-size: 1.5rem;
+            }
+
+            .main-content p {
+                font-size: 1rem;
+            }
+        }
+        /* Mobile responsiveness */
+@media (max-width: 768px) {
+    body {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        transform: translateX(-100%);  /* Initially hidden */
+        transition: transform 0.3s ease;  /* Transition for sliding */
+    }
+
+    .sidebar.hidden {
+        transform: translateX(0);  /* Slide the sidebar in */
+    }
+
+    .main-content {
+        margin-left: 0;
+        padding: 1rem;
+    }
+
+    .toggle-btn {
+        display: block;
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        z-index: 1100;
+    }
+}
+
         
     </style>
 </head>
 <body>
     <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
     <div class="sidebar">
-        <a href="/" class="logo">LokQuiz</a>
+        <a href="/dashboard/" class="logo">LokQuiz</a>
         <ul>
-            <li><a href="/makequiz/">Make a Quiz</a></li>
-            <li><a href="/quiz/">Quizzes</a></li>
-            <li><a href="/materials/">Study Materials</a></li>
-            <li><a href="/leaderboard/">Leaderboard</a></li>
-            <li><a href="/profile/">Profile</a></li>
+            <li class="active"><a href="/makequiz/"><i class="fas fa-pencil-alt"></i> Make a Quiz</a></li>
+            <li><a href="/quizzes/"><i class="fas fa-list-ul"></i> Quizzes</a></li>
+            <li><a href="/materials/"><i class="fas fa-book"></i> Study Materials</a></li>
+            <li><a href="/leaderboard/"><i class="fas fa-trophy"></i> Leaderboard</a></li>
+            <li><a href="/profile/"><i class="fas fa-user"></i> Profile</a></li>
         </ul>
         <div class="logout">
-            <a href="/logout/">Logout</a>
+            <a href="/logout/"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </div>
     </div>
     <div class="main-content">
@@ -337,29 +436,34 @@
                             <div class="quiz-item">
                                 <span class="quiz-name">{{ quiz.name }}</span>
                                 <span class="quiz-date">{{ quiz.created_at|date:"F j, Y" }}</span>
-                                <a href="{% url 'play_quiz' quiz.id %}" class="play-button">Play Quiz</a>
+                                <a href="{% url 'quiz-detail' quiz.id %}" class="play-button">Play</a>
                             </div>
                         </li>
                     {% endfor %}
                 </ul>
             {% else %}
-                <p>No quizzes found. Create your first quiz!</p>
+                <p>No quizzes available.</p>
             {% endif %}
         </div>
-
-    </div>
-    
-    <div id="loading">
-        <div class="spinner"></div>
-        <p>Processing...</p>
     </div>
 
     <script>
+        const sidebar = document.querySelector('.sidebar');
+        const mainContent = document.querySelector('.main-content');
+        
         function toggleSidebar() {
-            const sidebar = document.querySelector('.sidebar');
-            const mainContent = document.querySelector('.main-content');
-            sidebar.classList.toggle('hidden');
+            sidebar.classList.toggle('hidden');  // Toggles the sidebar's visibility
             mainContent.classList.toggle('expanded');
+            
+        }
+    </script>
+    <script>
+        function confirmLogout(event) {
+            event.preventDefault();
+            const isConfirmed = confirm('Are you sure you want to log out?');
+            if (isConfirmed) {
+                window.location.href = '/logout/';
+            }
         }
     </script>
 </body>

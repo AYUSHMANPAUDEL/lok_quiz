@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - LokQuiz</title>
+    <title>Study Materials - LokQuiz</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
@@ -20,7 +20,6 @@
             display: flex;
             height: 100vh;
             overflow: hidden;
-            position: relative;
         }
 
         .sidebar {
@@ -103,7 +102,7 @@
         .main-content {
             flex-grow: 1;
             margin-left: 250px;
-            margin-top: 17px;
+            margin-top:17px;
             padding: 2rem;
             overflow-y: auto;
             transition: margin-left 0.3s ease-in-out;
@@ -114,7 +113,7 @@
         }
 
         .toggle-btn {
-            position: fixed;
+            position: absolute;
             top: 20px;
             left: 20px;
             background: #003366;
@@ -134,59 +133,85 @@
         .main-content h1 {
             color: #003366;
             margin-bottom: 1rem;
+            font-size: 2rem;
+            font-weight: 600;
         }
 
         .main-content p {
             margin-bottom: 2rem;
             color: #555;
+            font-size: 1rem;
         }
 
-        .card-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .card {
+        .material {
             background: #fff;
+            border-radius: 8px;
             padding: 1.5rem;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .card h2 {
-            color: #003366;
-            margin-bottom: 1rem;
-        }
-
-        .card p {
-            color: #555;
             margin-bottom: 1.5rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.1rem;
         }
 
-        .card a {
-            text-decoration: none;
-            background: #003366;
-            color: #fff;
-            padding: 0.8rem 1.2rem;
-            border-radius: 5px;
-            font-size: 0.9rem;
+        .material a {
+            color: #003366;
             font-weight: 600;
-            transition: background 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            margin-left: 10px;
+            transition: color 0.3s ease;
         }
 
-        .card a:hover {
-            background: #004b99;
+        .material a:hover {
+            color: #005cbf;
         }
 
-        /* Mobile responsiveness */
-        /* Mobile responsiveness */
+        .material .icon {
+            font-size: 1.4rem;
+            color: #003366;
+            margin-left: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 200px;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 1.5rem;
+            }
+
+            .toggle-btn {
+                left: 15px;
+                top: 15px;
+            }
+
+            .material {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .material a {
+                margin-top: 0.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .sidebar {
+                width: 150px;
+            }
+
+            .main-content h1 {
+                font-size: 1.5rem;
+            }
+
+            .material {
+                font-size: 1rem;
+            }
+        }
         @media (max-width: 768px) {
             body {
                 flex-direction: column;
@@ -274,7 +299,6 @@
         z-index: 1100;
     }
 }
-
     </style>
 </head>
 <body>
@@ -284,48 +308,40 @@
         <ul>
             <li><a href="/makequiz/"><i class="fas fa-pencil-alt"></i> Make a Quiz</a></li>
             <li><a href="/quizzes/"><i class="fas fa-list-ul"></i> Quizzes</a></li>
-            <li><a href="/materials/"><i class="fas fa-book"></i> Study Materials</a></li>
+            <li class="active"><a href="/materials/"><i class="fas fa-book"></i> Study Materials</a></li>
             <li><a href="/leaderboard/"><i class="fas fa-trophy"></i> Leaderboard</a></li>
             <li><a href="/profile/"><i class="fas fa-user"></i> Profile</a></li>
         </ul>
         <div class="logout">
             <a href="#" onclick="confirmLogout(event)"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </div>
+        
+        <script>
+            function confirmLogout(event) {
+                event.preventDefault();
+                const isConfirmed = confirm('Are you sure you want to log out?');
+                if (isConfirmed) {
+                    window.location.href = '/logout/';
+                }
+            }
+        </script>
+        
     </div>
     <div class="main-content">
-        {% if messages %}
-        <div>
-            {% for message in messages %}
-                <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">{{ message }}</div>
-            {% endfor %}
-        </div>
-        {% endif %}
-        <h1>Welcome to LokQuiz Dashboard!</h1>
-        <p>Explore the resources and tools to help you excel in your Lok Sewa preparation.</p>
-        <div class="card-grid">
-            <div class="card">
-                <h2>Make a Quiz</h2>
-                <p>Test your knowledge with our interactive quizzes.</p>
-                <a href="/makequiz/">Start Quiz</a>
-            </div>
-            <div class="card">
-                <h2>Study Materials</h2>
-                <p>Access detailed notes and guides for Lok Sewa exams.</p>
-                <a href="/materials/">View Materials</a>
-            </div>
-            <div class="card">
-                <h2>Leaderboard</h2>
-                <p>See where you stand among other aspirants.</p>
-                <a href="/leaderboard/">View Leaderboard</a>
-            </div>
-            <div class="card">
-                <h2>Profile</h2>
-                <p>Update your profile and track your progress.</p>
-                <a href="/profile/">View Profile</a>
+        <h1>Study Materials</h1>
+        {% for material in materials %}
+        <div class="material">
+            <span>{{ material.title }}</span>
+            <div>
+                <a href="{{ material.file.url }}" target="_blank">
+                    View PDF <i class="fas fa-file-pdf icon"></i>
+                </a>
             </div>
         </div>
+        {% empty %}
+        <p>No study materials available at the moment.</p>
+        {% endfor %}
     </div>
-
     <script>
         const sidebar = document.querySelector('.sidebar');
         const mainContent = document.querySelector('.main-content');

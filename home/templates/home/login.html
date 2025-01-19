@@ -15,6 +15,7 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
+            flex-direction: column;
         }
 
         .text-logo {
@@ -25,7 +26,7 @@
             font-weight: 700;
             color: #003366;
             text-decoration: none;
-            margin-left:50px;
+            margin-left: 50px;
         }
 
         .container {
@@ -33,6 +34,7 @@
             justify-content: center;
             align-items: center;
             width: 100%;
+            padding: 0 10px;
         }
 
         .card {
@@ -42,17 +44,19 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             text-align: center;
             width: 100%;
-            max-width: 400px;
+            max-width: 450px;
         }
 
         h1 {
             margin-bottom: 0.5rem;
             color: #003366;
+            font-size: 1.8rem;
         }
 
         p {
             margin-bottom: 1.5rem;
             color: #555;
+            font-size: 1rem;
         }
 
         .input-group {
@@ -113,13 +117,47 @@
             text-decoration: underline;
         }
 
-        @media (max-width: 480px) {
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 20px;
+            }
+
             .card {
-                padding: 1.5rem;
+                padding: 2rem;
+                width: 100%;
+                max-width: 350px;
             }
 
             h1 {
-                font-size: 1.5rem;
+                font-size: 1.6rem;
+            }
+
+            p {
+                font-size: 0.95rem;
+            }
+
+            .btn, input {
+                font-size: 0.95rem;
+            }
+
+            .text-logo {
+                font-size: 2rem;
+                left: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 0 15px;
+            }
+
+            .card {
+                padding: 1.5rem;
+                width: 100%;
+            }
+
+            h1 {
+                font-size: 1.4rem;
             }
 
             p {
@@ -131,7 +169,8 @@
             }
 
             .text-logo {
-                font-size: 1.2rem;
+                font-size: 1.5rem;
+                margin-left: 10px;
             }
         }
     </style>

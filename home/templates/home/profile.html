@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - LokQuiz</title>
+    <title>Profile - LokQuiz</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
+        /* General Reset */
         * {
             margin: 0;
             padding: 0;
@@ -20,9 +21,10 @@
             display: flex;
             height: 100vh;
             overflow: hidden;
-            position: relative;
+            padding-top: 20px;
         }
 
+        /* Sidebar */
         .sidebar {
             width: 250px;
             background: #003366;
@@ -100,13 +102,16 @@
             background: #FF7043;
         }
 
+        /* Main Content */
         .main-content {
             flex-grow: 1;
             margin-left: 250px;
-            margin-top: 17px;
             padding: 2rem;
             overflow-y: auto;
             transition: margin-left 0.3s ease-in-out;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
         .main-content.expanded {
@@ -114,7 +119,7 @@
         }
 
         .toggle-btn {
-            position: fixed;
+            position: absolute;
             top: 20px;
             left: 20px;
             background: #003366;
@@ -131,62 +136,119 @@
             background: #004b99;
         }
 
-        .main-content h1 {
-            color: #003366;
+        /* Profile Section */
+        .profile-section {
+            text-align: center;
+        }
+
+        .profile-section img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
             margin-bottom: 1rem;
         }
 
-        .main-content p {
-            margin-bottom: 2rem;
-            color: #555;
-        }
-
-        .card-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .card {
-            background: #fff;
-            padding: 1.5rem;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .card h2 {
+        .profile-section h1 {
+            font-size: 1.8rem;
             color: #003366;
-            margin-bottom: 1rem;
+            margin-bottom: 0.5rem;
         }
 
-        .card p {
-            color: #555;
-            margin-bottom: 1.5rem;
+        .profile-section p {
+            font-size: 1.2rem;
+            color: #666;
         }
 
-        .card a {
-            text-decoration: none;
+        .change-username {
+            margin-top: 1rem;
+        }
+
+        .change-username button {
             background: #003366;
             color: #fff;
-            padding: 0.8rem 1.2rem;
+            border: none;
+            padding: 0.5rem 1rem;
             border-radius: 5px;
-            font-size: 0.9rem;
-            font-weight: 600;
+            cursor: pointer;
+            font-weight: bold;
             transition: background 0.3s ease;
         }
 
-        .card a:hover {
+        .change-username button:hover {
             background: #004b99;
         }
 
-        /* Mobile responsiveness */
-        /* Mobile responsiveness */
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            width: 300px;
+        }
+
+        .modal-content input {
+            width: 100%;
+            padding: 0.5rem;
+            margin-top: 1rem;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        .modal-content button {
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            background: #003366;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .modal-content button:hover {
+            background: #004b99;
+        }
+        .message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-size: 1rem;
+            text-align: center;
+        }
+
+        .message.success {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .message.error {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .message.info {
+            background-color: #2196F3;
+            color: white;
+        }
         @media (max-width: 768px) {
             body {
                 flex-direction: column;
@@ -286,46 +348,55 @@
             <li><a href="/quizzes/"><i class="fas fa-list-ul"></i> Quizzes</a></li>
             <li><a href="/materials/"><i class="fas fa-book"></i> Study Materials</a></li>
             <li><a href="/leaderboard/"><i class="fas fa-trophy"></i> Leaderboard</a></li>
-            <li><a href="/profile/"><i class="fas fa-user"></i> Profile</a></li>
+            <li class="active"><a href="/profile/"><i class="fas fa-user"></i> Profile</a></li>
         </ul>
         <div class="logout">
             <a href="#" onclick="confirmLogout(event)"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </div>
+        
+        <script>
+            function confirmLogout(event) {
+                event.preventDefault();
+                const isConfirmed = confirm('Are you sure you want to log out?');
+                if (isConfirmed) {
+                    window.location.href = '/logout/';
+                }
+            }
+        </script>
+        
     </div>
     <div class="main-content">
         {% if messages %}
-        <div>
-            {% for message in messages %}
-                <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">{{ message }}</div>
-            {% endfor %}
-        </div>
-        {% endif %}
-        <h1>Welcome to LokQuiz Dashboard!</h1>
-        <p>Explore the resources and tools to help you excel in your Lok Sewa preparation.</p>
-        <div class="card-grid">
-            <div class="card">
-                <h2>Make a Quiz</h2>
-                <p>Test your knowledge with our interactive quizzes.</p>
-                <a href="/makequiz/">Start Quiz</a>
+    <div>
+        {% for message in messages %}
+            <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
+                {{ message }}
             </div>
-            <div class="card">
-                <h2>Study Materials</h2>
-                <p>Access detailed notes and guides for Lok Sewa exams.</p>
-                <a href="/materials/">View Materials</a>
-            </div>
-            <div class="card">
-                <h2>Leaderboard</h2>
-                <p>See where you stand among other aspirants.</p>
-                <a href="/leaderboard/">View Leaderboard</a>
-            </div>
-            <div class="card">
-                <h2>Profile</h2>
-                <p>Update your profile and track your progress.</p>
-                <a href="/profile/">View Profile</a>
+        {% endfor %}
+    </div>
+{% endif %}
+
+        <div class="profile-section">
+            <img src="https://www.gravatar.com/avatar/?d=mp" alt="Default Profile Icon">
+            <h1>{{ user.username }}</h1>
+            <p>Score: {{ score.score }}</p>
+
+            <div class="change-username">
+                <button onclick="openModal()">Change Username</button>
             </div>
         </div>
     </div>
 
+    <div class="modal" id="usernameModal">
+        <div class="modal-content">
+            <h2>Change Username</h2>
+            <form method="POST" action="{% url 'update_profile' %}">
+                {% csrf_token %}
+                <input type="text" name="username" placeholder="Enter new username" required>
+                <button type="submit">Update</button>
+            </form>
+        </div>
+    </div>
     <script>
         const sidebar = document.querySelector('.sidebar');
         const mainContent = document.querySelector('.main-content');
@@ -337,12 +408,13 @@
         }
     </script>
     <script>
-        function confirmLogout(event) {
-            event.preventDefault();
-            const isConfirmed = confirm('Are you sure you want to log out?');
-            if (isConfirmed) {
-                window.location.href = '/logout/';
-            }
+
+        function openModal() {
+            document.getElementById('usernameModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('usernameModal').classList.remove('active');
         }
     </script>
 </body>

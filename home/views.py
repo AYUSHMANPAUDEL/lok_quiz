@@ -91,7 +91,8 @@ def create_quiz(quiz_topic, quiz_description):
 
     If the description or topic provided is incorrect, reply with: "Error Occurred: Bad Quiz Description or Topic".
     Do not include any other content, only the JSON response. Only reply in English. Give at least 10 questions. Just reply me with JSON format only not even this ```json too.
-    if the quiz_topic and quiz_description is non-sense or out of topic please reply with that error.
+    if the quiz_topic and quiz_description is non-sense or out of topic please reply with that error.Always make sure that correct option should be from 1 to 4 (not starting from 0).
+    Generate that type of questions that might come in Nepal's lok sewa exam.
     """
 
     response = g4f.ChatCompletion.create(
@@ -268,3 +269,91 @@ def check_answer(request):
 
     return JsonResponse({'error': 'Invalid request'}, status=400)
 
+@login_required(login_url='/login/')
+def leaderboard(request):
+    # Fetch all scorers ordered by score
+    scores = Score.objects.select_related('user').order_by('-score')
+
+    # Fetch top 3 scorers
+    top_scorers = scores[:3]
+
+    # Fetch other scorers (excluding top 3, limit to 20)
+    other_scorers = scores[3:23]
+
+    # Find the requested user's rank
+    user_rank = None
+    user_score = None
+    for index, score in enumerate(scores, start=1):
+        if score.user == request.user:
+            user_rank = index
+            user_score = score.score
+            break
+
+    return render(request, 'home/leaderboard.html', {
+        'top_scorers': top_scorers,
+        'other_scorers': other_scorers,
+        'user_rank': user_rank,
+        'user_score': user_score,
+    })
+
+@login_required(login_url='/login/')
+def my_quizzes(request):
+    # Fetch all quizzes created by the logged-in user
+    user_quizzes = Quiz.objects.filter(user=request.user).order_by('-created_at')
+
+    # Handle quiz deletion
+    if request.method == 'POST' and 'delete_quiz' in request.POST:
+        quiz_id = request.POST.get('quiz_id')
+        quiz = get_object_or_404(Quiz, id=quiz_id, created_by=request.user)
+        quiz.delete()
+        messages.success(request, "Quiz deleted successfully.")
+        return redirect('my_quizzes')
+
+    return render(request, 'home/quizzes.html', {
+        'latest_quizzes': user_quizzes,  # Pass quizzes as `latest_quizzes`
+    })
+@login_required(login_url='/login/')
+def delete_quiz(request, quiz_id):
+    quiz = get_object_or_404(Quiz, id=quiz_id)
+    quiz.delete()
+    messages.success(request, "Quiz deleted successfully!")
+    return redirect('quizzes_page')
+
+@login_required(login_url='/login/')
+def profile(request):
+    # Use get_or_create to either fetch the existing score or create a new one if it doesn't exist
+    score, created = Score.objects.get_or_create(user=request.user)
+    
+    # If a new score is created, you may want to set a default value, for example:
+    if created:
+        score.value = 0  # assuming 'value' is the field that stores the score, adjust accordingly
+        score.save()
+    
+    return render(request, 'home/profile.html', {'score': score})
+
+@login_required(login_url='/login/')
+def update_username(request):
+    if request.method == 'POST':
+        new_username = request.POST.get('username')
+        if new_username:
+            request.user.username = new_username
+            request.user.save()
+            messages.success(request, 'Your username has been updated!')
+            return redirect('profile')
+        else:
+            messages.error(request, 'Username cannot be empty!')
+            return redirect('profile')
+        
+
+from .models import StudyMaterial
+
+def study_materials(request):
+    materials = StudyMaterial.objects.all().order_by('-uploaded_at')
+    return render(request, 'home/study_materials.html', {'materials': materials})
+
+from django.contrib.auth import logout
+@login_required(login_url='/login/')
+def logout_view(request):
+    if request.user.is_authenticated:
+        logout(request)
+    return redirect('login_page')

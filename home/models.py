@@ -28,3 +28,11 @@ class Score(models.Model):
     score = models.IntegerField(default=0) 
     def __str__(self):
         return self.user.username
+
+class StudyMaterial(models.Model):
+    title = models.CharField(max_length=255)
+    file = models.FileField(upload_to='study_materials/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
