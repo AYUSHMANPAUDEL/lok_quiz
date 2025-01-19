@@ -7,6 +7,8 @@ import g4f
 import json
 from .models import Quiz, Question , Score
 from django.http import JsonResponse
+from celery import shared_task
+from celery.result import AsyncResult
 # Create your views here.
 def main_page(request):
     return render(request,"home/index.html")
@@ -115,6 +117,13 @@ def create_quiz(quiz_topic, quiz_description):
         return quiz_details  # Return the full aggregated response
     return False
 
+
+@shared_task
+def generate_quiz_task(quiz_topic, quiz_description):
+    # Existing create_quiz logic here
+    # Return the JSON response or error
+    return create_quiz(quiz_topic, quiz_description)
+
 @login_required(login_url='/login/')
 def quiz_page(request):
     if request.method == 'POST':
@@ -122,8 +131,7 @@ def quiz_page(request):
         quiz_description = request.POST.get('quiz-description')
 
         if not quiz_topic or not quiz_description:
-            messages.error(request, "Both quiz topic and description are required.")
-            return redirect('quiz_page')
+            return JsonResponse({'success': False, 'message': 'Both quiz topic and description are required.'})
         
         # Generate the quiz using AI
         quiz_data = create_quiz(quiz_topic, quiz_description)
@@ -155,20 +163,17 @@ def quiz_page(request):
                             correct_option=question_data.get('correct_option', 1)
                         )
 
-                    messages.success(request, "Quiz created successfully!")
-                    return redirect('quiz_page')  # Redirect to view quiz page
+                    return JsonResponse({'success': True, 'message': 'Quiz created successfully!'})
                 else:
-                    messages.error(request, "Invalid quiz data format received.")
-                    return redirect('quiz_page')
-
+                    return JsonResponse({'success': False, 'message': 'Invalid quiz data format received.'})
             except json.JSONDecodeError:
-                messages.error(request, "Error occurred while parsing the quiz data.")
-                return redirect('quiz_page')
+                return JsonResponse({'success': False, 'message': 'Error occurred while parsing the quiz data.'})
         else:
-            messages.error(request, "Error occurred while generating the quiz.")
-            return redirect('quiz_page')
+            return JsonResponse({'success': False, 'message': 'Error occurred while generating the quiz.'})
+    
     latest_quizzes = Quiz.objects.filter(user=request.user).order_by('-created_at')[:3]
     return render(request, 'home/makequiz.html', {'latest_quizzes': latest_quizzes})
+
 
 @login_required(login_url='/login/')
 def play_quiz(request, quiz_id):
