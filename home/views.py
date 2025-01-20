@@ -7,8 +7,7 @@ import g4f
 import json
 from .models import Quiz, Question , Score
 from django.http import JsonResponse
-from celery import shared_task
-from celery.result import AsyncResult
+
 # Create your views here.
 def main_page(request):
     return render(request,"home/index.html")
@@ -98,7 +97,7 @@ def create_quiz(quiz_topic, quiz_description):
     If the description or topic provided is incorrect, reply with: "Error Occurred: Bad Quiz Description or Topic".
     Do not include any other content, only the JSON response. Only reply in English. Give at least 10 questions. Just reply me with JSON format only not even this ```json too.
     if the quiz_topic and quiz_description is non-sense or out of topic please reply with that error.Always make sure that correct option should be from 1 to 4 (not starting from 0).
-    Generate that type of questions that might come in Nepal's lok sewa exam. Recheck before giving me the questions and answers make sure every answers of the questions are correct.
+    Generate that type of questions that might come in Nepal's lok sewa exam. Recheck before giving me the questions and answers make sure every answers of the questions are correct.Give most of the questions for past Lok Sewa Exams questions please.
     """
 
     response = g4f.ChatCompletion.create(
@@ -117,13 +116,6 @@ def create_quiz(quiz_topic, quiz_description):
         return quiz_details  # Return the full aggregated response
     return False
 
-
-@shared_task
-def generate_quiz_task(quiz_topic, quiz_description):
-    # Existing create_quiz logic here
-    # Return the JSON response or error
-    return create_quiz(quiz_topic, quiz_description)
-
 @login_required(login_url='/login/')
 def quiz_page(request):
     if request.method == 'POST':
@@ -131,7 +123,8 @@ def quiz_page(request):
         quiz_description = request.POST.get('quiz-description')
 
         if not quiz_topic or not quiz_description:
-            return JsonResponse({'success': False, 'message': 'Both quiz topic and description are required.'})
+            messages.error(request, "Both quiz topic and description are required.")
+            return redirect('quiz_page')
         
         # Generate the quiz using AI
         quiz_data = create_quiz(quiz_topic, quiz_description)
@@ -163,17 +156,20 @@ def quiz_page(request):
                             correct_option=question_data.get('correct_option', 1)
                         )
 
-                    return JsonResponse({'success': True, 'message': 'Quiz created successfully!'})
+                    messages.success(request, "Quiz created successfully!")
+                    return JsonResponse({'success': True, 'message': 'Quiz created successfully!'})  # Redirect to view quiz page
                 else:
-                    return JsonResponse({'success': False, 'message': 'Invalid quiz data format received.'})
+                    messages.error(request, "Invalid quiz data format received.")
+                    return JsonResponse({'success': False, 'message': f'Error: {str(e)}'}, status=500)
+
             except json.JSONDecodeError:
-                return JsonResponse({'success': False, 'message': 'Error occurred while parsing the quiz data.'})
+                messages.error(request, "Error occurred while parsing the quiz data.")
+                return redirect('quiz_page')
         else:
-            return JsonResponse({'success': False, 'message': 'Error occurred while generating the quiz.'})
-    
+            messages.error(request, "Error occurred while generating the quiz.")
+            return redirect('quiz_page')
     latest_quizzes = Quiz.objects.filter(user=request.user).order_by('-created_at')[:3]
     return render(request, 'home/makequiz.html', {'latest_quizzes': latest_quizzes})
-
 
 @login_required(login_url='/login/')
 def play_quiz(request, quiz_id):
