@@ -58,7 +58,7 @@ def login_view(request):
             return redirect('dashboard_page')  # Change this to the home or dashboard page
         else:
             messages.error(request, "Invalid username or password.")
-            return redirect('login')  # Redirect back to the login page
+            return redirect('login_page')  # Redirect back to the login page
     
     return render(request, 'home/login.html')
 
