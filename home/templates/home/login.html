@@ -175,9 +175,40 @@
                 margin-left: 10px;
             }
         }
+        .message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-size: 1rem;
+            text-align: center;
+        }
+        
+        .message.success {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        .message.error {
+            background-color: #f44336;
+            color: white;
+        }
+        
+        .message.info {
+            background-color: #2196F3;
+            color: white;
+        }
     </style>
 </head>
 <body>
+    {% if messages %}
+    <div>
+        {% for message in messages %}
+            <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
     <a href="/" class="text-logo">LokQuiz</a>
     <div class="container">
         <div class="card">
