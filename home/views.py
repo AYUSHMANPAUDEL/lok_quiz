@@ -101,10 +101,9 @@ def create_quiz(quiz_topic, quiz_description):
     """
 
     response = g4f.ChatCompletion.create(
-        model="gpt-4o",
-        provider=g4f.Provider.ChatGptEs,
+        model="gpt-4o-mini",
         messages=[{"role": "user", "content": prompt}],
-        stream=True,
+        web_search=True,
     )
 
     quiz_details = ""
